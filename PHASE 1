@@ -1,0 +1,87 @@
+# machine_learning_AirPollution
+# ON KAGGLE
+
+
+# PHASE 1
+# 1 DATA SELECTION
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the dataset
+df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv', sep=';')
+# GIVES TYPE OF DATA
+print(df.info()) #
+
+
+# 2 EXPLORATION
+
+# Delete missing data
+df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
+df.dropna(how='all', inplace=True)
+
+# Combine 'Date' and 'Time' into a single datetime column
+df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
+
+# View data distribution
+# Take only pollutants and remove sensor data
+df_pollutants = df_indexed[['CO(GT)','NMHC(GT)','C6H6(GT)','NOx(GT)','NO2(GT)']]
+
+pollutants = df_pollutants.columns
+
+for pollutant in pollutants:
+    # Plot time series data
+    plt.figure(figsize=(10, 6))
+    df_cleaned = df_pollutants[df_pollutants[pollutant] >= 0]
+    plt.plot(df_cleaned[pollutant])
+    plt.xlabel('Datetime')
+    plt.ylabel(pollutant)
+    plt.legend()
+    plt.show()
+
+# Take daily averages
+for pollutant in pollutants:
+    # Plot time series data
+    plt.figure(figsize=(10, 6))
+    df_cleaned = df_pollutants[df_pollutants[pollutant] >= 0].rolling(window=24, center=True).mean()
+    plt.plot(df_cleaned[pollutant])
+    plt.xlabel('Datetime')
+    plt.ylabel(pollutant)
+    plt.legend()
+    plt.show()
+
+# Correlation Matrix
+pollutants = df_pollutants.columns
+
+df_cleaned = df_pollutants[df_pollutants >= 0]
+
+corr_matrix = df_cleaned.corr()
+plt.figure(figsize=(8, 6), dpi=300)
+sns.heatmap(corr_matrix, annot=True, cmap='flare', fmt=".2f", linewidths=0.5)
+plt.title("Correlation Heatmap")
+plt.show()
+
+
+# 3 PREPROCESSING
+
+# Handle missing values using appropriate imputation techniques
+df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
+df.dropna(how='all', inplace=True)
+df.isnull().sum() #counts haw many missing value per feature
+
+# Separate numerical and categorical columns
+numerical_columns = ['CO(GT)', 'PT08.S1(CO)', 'NMHC(GT)', 'C6H6(GT)', 
+                     'PT08.S2(NMHC)', 'NOx(GT)', 'PT08.S3(NOx)', 
+                     'NO2(GT)', 'PT08.S4(NO2)', 'PT08.S5(O3)', 'T', 'RH', 'AH']
+
+# **Normalize Numerical Features**: Min-Max scaling (values in range [0, 1])
+normalizer = MinMaxScaler()
+normalized_features = normalizer.fit_transform(df[numerical_columns])
+df_normalized = pd.DataFrame(normalized_features, columns=numerical_columns)
+
+# Add normalized data to the original DataFrame
+df_processed = df.copy()
+df_processed[numerical_columns] = normalized_features  # Using normalized values
+df_processed.head()
+
