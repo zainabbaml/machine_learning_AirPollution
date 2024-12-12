@@ -24,6 +24,9 @@ df.dropna(how='all', inplace=True)
 # Combine 'Date' and 'Time' into a single datetime column
 df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
 
+df_indexed = df.set_index('Datetime')
+df_indexed.drop(columns={"Date","Time"}, inplace=True)
+
 # View data distribution
 # Take only pollutants and remove sensor data
 df_pollutants = df_indexed[['CO(GT)','NMHC(GT)','C6H6(GT)','NOx(GT)','NO2(GT)']]
@@ -84,4 +87,3 @@ df_normalized = pd.DataFrame(normalized_features, columns=numerical_columns)
 df_processed = df.copy()
 df_processed[numerical_columns] = normalized_features  # Using normalized values
 df_processed.head()
-
