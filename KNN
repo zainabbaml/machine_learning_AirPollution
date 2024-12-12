@@ -1,0 +1,83 @@
+# Importer les bibliothèques nécessaires
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Charger le dataset (modifiez le chemin si nécessaire)
+df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv')
+
+# Prétraitement des données
+
+# Supprimer les colonnes inutiles
+df.drop(columns={"Unnamed: 15", "Unnamed: 16"}, inplace=True)  # Suppression des colonnes non pertinentes
+
+# Supprimer les lignes où toutes les valeurs sont NaN
+df.dropna(how='all', inplace=True)
+
+# Remplir les valeurs manquantes pour les colonnes numériques avec la moyenne de la colonne
+numerical_columns = df.select_dtypes(include=['float64', 'int64']).columns
+df[numerical_columns] = df[numerical_columns].fillna(df[numerical_columns].mean())
+
+# Combiner 'Date' et 'Time' en une seule colonne datetime
+df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
+
+# Définir 'Datetime' comme index du DataFrame (facultatif)
+df.set_index('Datetime', inplace=True)
+
+# Sélectionner les colonnes de caractéristiques pertinentes pour la classification
+df_features = df[['CO(GT)', 'NMHC(GT)', 'C6H6(GT)', 'NOx(GT)', 'NO2(GT)', 'T', 'RH', 'AH']]
+
+# Créer une variable cible binaire (par exemple : pollution élevée vs faible)
+df['Pollution_Class'] = (df['CO(GT)'] > 1.0).astype(int)  # Si CO(GT) > 1.0, on considère cela comme "pollution élevée"
+
+# Sélectionner les caractéristiques (X) et la variable cible (y)
+X = df_features
+y = df['Pollution_Class']
+
+# Normalisation des caractéristiques (mise à l'échelle Min-Max)
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Séparer le dataset en ensembles d'entraînement et de test
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Entraîner le modèle K-Nearest Neighbors (KNN)
+knn = KNeighborsClassifier(n_neighbors=5)  # Choisissez un nombre de voisins approprié
+knn.fit(X_train, y_train)
+
+# Faire des prédictions sur l'ensemble de test
+y_pred = knn.predict(X_test)
+
+# Calculer l'exactitude du modèle
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.3f}")
+
+# Afficher le rapport de classification
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Afficher la matrice de confusion
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Visualisation de l'importance des caractéristiques avec un graphique (si nécessaire)
+# KNN n'a pas d'attribut d'importance des caractéristiques, donc on peut visualiser les performances en fonction de k.
+k_values = [1, 3, 5, 7, 9, 11, 13, 15]
+accuracies = []
+
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    y_pred = knn.predict(X_test)
+    accuracies.append(accuracy_score(y_test, y_pred))
+
+plt.figure(figsize=(10, 6))
+plt.plot(k_values, accuracies, marker='o')
+plt.title('KNN - Accuracy vs. Number of Neighbors (k)')
+plt.xlabel('Number of Neighbors (k)')
+plt.ylabel('Accuracy')
+plt.grid(True)
+plt.show()
