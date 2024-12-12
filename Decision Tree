@@ -1,3 +1,79 @@
+# Importer les bibliothèques nécessaires
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import MinMaxScaler
+
+# Charger le dataset (modifiez le chemin si nécessaire)
+df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv')
+
+# Prétraitement des données
+
+# Supprimer les colonnes inutiles
+df.drop(columns={"Unnamed: 15", "Unnamed: 16"}, inplace=True)  # Suppression des colonnes non pertinentes
+
+# Supprimer les lignes où toutes les valeurs sont NaN
+df.dropna(how='all', inplace=True)
+
+# Remplir les valeurs manquantes pour les colonnes numériques avec la moyenne de la colonne
+numerical_columns = df.select_dtypes(include=['float64', 'int64']).columns
+df[numerical_columns] = df[numerical_columns].fillna(df[numerical_columns].mean())
+
+# Combiner 'Date' et 'Time' en une seule colonne datetime
+df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
+
+# Définir 'Datetime' comme index du DataFrame (facultatif)
+df.set_index('Datetime', inplace=True)
+
+# Sélectionner les colonnes de caractéristiques pertinentes pour la classification
+df_features = df[['CO(GT)', 'NMHC(GT)', 'C6H6(GT)', 'NOx(GT)', 'NO2(GT)', 'T', 'RH', 'AH']]
+
+# Créer une variable cible binaire (par exemple : pollution élevée vs faible)
+df['Pollution_Class'] = (df['CO(GT)'] > 1.0).astype(int)  # Si CO(GT) > 1.0, on considère cela comme "pollution élevée"
+
+# Sélectionner les caractéristiques (X) et la variable cible (y)
+X = df_features
+y = df['Pollution_Class']
+
+# Normalisation des caractéristiques (mise à l'échelle Min-Max)
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Séparer le dataset en ensembles d'entraînement et de test
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Entraîner le modèle Decision Tree Classifier
+clf = DecisionTreeClassifier(random_state=42)
+clf.fit(X_train, y_train)
+
+# Faire des prédictions sur l'ensemble de test
+y_pred = clf.predict(X_test)
+
+# Calculer l'exactitude du modèle
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.3f}")
+
+# Afficher le rapport de classification
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Afficher la matrice de confusion
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Visualiser l'arbre de décision
+plt.figure(figsize=(20, 10))
+plot_tree(clf, filled=True, feature_names=X.columns, class_names=["Low Pollution", "High Pollution"], fontsize=12)
+plt.title("Decision Tree Visualization")
+plt.show()
+
+
+
+
+
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, roc_curve
 
 # Calculate Precision, Recall, F1-Score
