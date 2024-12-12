@@ -1,0 +1,26 @@
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
+
+# Elbow method to determine optimal number of clusters
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
+    kmeans.fit(df_normalized)
+    inertia.append(kmeans.inertia_)
+
+# Plot elbow curve
+plt.figure(figsize=(8, 5))
+plt.plot(range(1, 11), inertia, marker='o')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia')
+plt.title('Elbow Method for Optimal k')
+plt.show()
+
+# Fit KMeans with optimal k
+optimal_k = 3  # Replace with elbow result
+kmeans = KMeans(n_clusters=optimal_k, init='k-means++', random_state=42)
+cluster_labels = kmeans.fit_predict(df_normalized)
+
+# Add cluster labels to the dataset
+df_processed['Cluster_KMeans'] = cluster_labels
