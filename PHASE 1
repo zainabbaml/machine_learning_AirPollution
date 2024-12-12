@@ -10,10 +10,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load the dataset
-df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv', sep=';')
+df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv')
 # GIVES TYPE OF DATA
 df.info()
-df.head()
 
 
 # 2 EXPLORATION
