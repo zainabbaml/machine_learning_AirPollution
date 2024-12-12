@@ -8,6 +8,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+
 
 # Load the dataset
 df = pd.read_csv('/kaggle/input/uci-air-quality-dataset/AirQualityUCI.csv')
@@ -17,9 +19,10 @@ df.info()
 
 # 2 EXPLORATION
 
-# Delete missing data
+# Handle missing values using appropriate imputation techniques
 df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
 df.dropna(how='all', inplace=True)
+df.isnull().sum() #counts haw many missing value per feature
 
 # Combine 'Date' and 'Time' into a single datetime column
 df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
@@ -69,9 +72,9 @@ plt.show()
 # 3 PREPROCESSING
 
 # Handle missing values using appropriate imputation techniques
-df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
-df.dropna(how='all', inplace=True)
-df.isnull().sum() #counts haw many missing value per feature
+#df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
+#df.dropna(how='all', inplace=True)
+#df.isnull().sum() #counts haw many missing value per feature
 
 # Separate numerical and categorical columns
 numerical_columns = ['CO(GT)', 'PT08.S1(CO)', 'NMHC(GT)', 'C6H6(GT)', 
