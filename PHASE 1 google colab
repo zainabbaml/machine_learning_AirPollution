@@ -1,0 +1,88 @@
+# MACHINE LEARNING AIR POLLUTION
+# ON GOOGLE COLAB
+
+# PHASE 1
+# 1 DATA SELECTION
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+from google.colab import files
+
+# Subir el archivo CSV
+uploaded = files.upload()  # Selecciona 'AirQualityUCI.csv' desde tu máquina local
+
+# Cargar el dataset
+df = pd.read_csv('AirQualityUCI.csv')  # Asegúrate de que el nombre coincida con el archivo cargado
+df.info()
+
+
+# 2 EXPLORATION
+
+# Handle missing values using appropriate imputation techniques
+df.drop(columns={"Unnamed: 15","Unnamed: 16"}, inplace=True)
+df.dropna(how='all', inplace=True)
+df.isnull().sum()  # Cuenta cuántos valores faltantes hay por cada característica
+
+# Combinar 'Date' y 'Time' en una sola columna de tipo datetime
+df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
+
+df_indexed = df.set_index('Datetime')
+df_indexed.drop(columns={"Date","Time"}, inplace=True)
+
+# Ver la distribución de los datos
+# Solo tomar los contaminantes y eliminar los datos de los sensores
+df_pollutants = df_indexed[['CO(GT)','NMHC(GT)','C6H6(GT)','NOx(GT)','NO2(GT)']]
+
+pollutants = df_pollutants.columns
+
+for pollutant in pollutants:
+    # Graficar los datos de la serie temporal
+    plt.figure(figsize=(10, 6))
+    df_cleaned = df_pollutants[df_pollutants[pollutant] >= 0]
+    plt.plot(df_cleaned[pollutant])
+    plt.xlabel('Datetime')
+    plt.ylabel(pollutant)
+    plt.legend()
+    plt.show()
+
+# Promedios diarios
+for pollutant in pollutants:
+    # Graficar los datos de la serie temporal con una ventana de 24 horas
+    plt.figure(figsize=(10, 6))
+    df_cleaned = df_pollutants[df_pollutants[pollutant] >= 0].rolling(window=24, center=True).mean()
+    plt.plot(df_cleaned[pollutant])
+    plt.xlabel('Datetime')
+    plt.ylabel(pollutant)
+    plt.legend()
+    plt.show()
+
+# Matriz de correlación
+pollutants = df_pollutants.columns
+
+df_cleaned = df_pollutants[df_pollutants >= 0]
+
+corr_matrix = df_cleaned.corr()
+plt.figure(figsize=(8, 6), dpi=300)
+sns.heatmap(corr_matrix, annot=True, cmap='flare', fmt=".2f", linewidths=0.5)
+plt.title("Correlation Heatmap")
+plt.show()
+
+
+# 3 PREPROCESSING
+
+# Separar columnas numéricas y categóricas
+numerical_columns = ['CO(GT)', 'PT08.S1(CO)', 'NMHC(GT)', 'C6H6(GT)', 
+                     'PT08.S2(NMHC)', 'NOx(GT)', 'PT08.S3(NOx)', 
+                     'NO2(GT)', 'PT08.S4(NO2)', 'PT08.S5(O3)', 'T', 'RH', 'AH']
+
+# **Normalizar Características Numéricas**: Escalado Min-Max (valores en el rango [0, 1])
+normalizer = MinMaxScaler()
+normalized_features = normalizer.fit_transform(df[numerical_columns])
+df_normalized = pd.DataFrame(normalized_features, columns=numerical_columns)
+
+# Agregar los datos normalizados al DataFrame original
+df_processed = df.copy()
+df_processed[numerical_columns] = normalized_features  # Usar los valores normalizados
+df_processed.head()
