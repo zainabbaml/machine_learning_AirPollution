@@ -1,0 +1,28 @@
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import classification_report, accuracy_score
+
+# Prepare the data
+# Use normalized columns to train the model
+X = df_normalized  # Features (normalized data)
+y = (df_indexed['CO(GT)'] > df_indexed['CO(GT)'].median()).astype(int)  # Example: classification based on the median
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create and train the decision tree
+decision_tree = DecisionTreeClassifier(max_depth=4, random_state=42)
+decision_tree.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = decision_tree.predict(X_test)
+
+# Evaluate the model's performance
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Accuracy Score:", accuracy_score(y_test, y_pred))
+
+# Visualize the decision tree
+plt.figure(figsize=(20, 10))
+plot_tree(decision_tree, feature_names=X.columns, class_names=['Low', 'High'], filled=True, rounded=True, fontsize=10)
+plt.title("Decision Tree - Visualization")
+plt.show()
