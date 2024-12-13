@@ -1,0 +1,46 @@
+from sklearn.metrics import classification_report, roc_curve, auc, accuracy_score
+import matplotlib.pyplot as plt
+
+# Evaluate Models
+def evaluate_model(model, X_test, y_test, model_name):
+    # Predict on the test set
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
+
+    # Classification Report
+    print(f"=== {model_name} ===")
+    print("Classification Report:\n", classification_report(y_test, y_pred))
+    print("Accuracy Score:", accuracy_score(y_test, y_pred))
+
+    # ROC Curve
+    if y_prob is not None:  # Ensure the model supports probability predictions
+        fpr, tpr, _ = roc_curve(y_test, y_prob)
+        roc_auc = auc(fpr, tpr)
+        plt.figure(figsize=(8, 6))
+        plt.plot(fpr, tpr, label=f"{model_name} (AUC = {roc_auc:.2f})")
+        plt.plot([0, 1], [0, 1], color="navy", linestyle="--")
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title(f"ROC Curve - {model_name}")
+        plt.legend(loc="lower right")
+        plt.show()
+
+
+# Train and Evaluate Models
+# KNN Classifier
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+evaluate_model(knn, X_test, y_test, "KNN Classifier")
+
+# Decision Tree Classifier
+from sklearn.tree import DecisionTreeClassifier
+decision_tree = DecisionTreeClassifier(max_depth=4, random_state=42)
+decision_tree.fit(X_train, y_train)
+evaluate_model(decision_tree, X_test, y_test, "Decision Tree Classifier")
+
+# Random Forest Classifier
+from sklearn.ensemble import RandomForestClassifier
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+random_forest.fit(X_train, y_train)
+evaluate_model(random_forest, X_test, y_test, "Random Forest Classifier")
