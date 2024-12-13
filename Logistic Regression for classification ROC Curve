@@ -1,5 +1,5 @@
-#Google colab 
-# Importation des bibliothèques nécessaires
+# Google Colab
+# Importing necessary libraries
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -8,31 +8,31 @@ from sklearn.datasets import make_classification
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import MinMaxScaler
 
-# Générer un jeu de données de classification binaire
+# Generating a binary classification dataset
 X, y = make_classification(n_samples=1000, n_features=20, n_informative=2, n_redundant=10, random_state=42)
 
-# Normalisation des données
+# Normalizing the data
 scaler = MinMaxScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Séparer les données en train et test
+# Splitting the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
 
-# Appliquer Logistic Regression
+# Applying Logistic Regression
 log_reg = LogisticRegression()
 log_reg.fit(X_train, y_train)
 
-# Obtenir les probabilités prédites (pour la courbe ROC)
-y_prob = log_reg.predict_proba(X_test)[:, 1]  # Probabilités pour la classe positive (1)
+# Getting the predicted probabilities (for the ROC curve)
+y_prob = log_reg.predict_proba(X_test)[:, 1]  # Probabilities for the positive class (1)
 
-# Calcul de la courbe ROC
+# Calculating the ROC curve
 fpr, tpr, thresholds = roc_curve(y_test, y_prob)
 roc_auc = auc(fpr, tpr)
 
-# Visualisation de la courbe ROC
+# Visualizing the ROC curve
 plt.figure(figsize=(8, 6))
 plt.plot(fpr, tpr, color='blue', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], color='gray', linestyle='--')  # Lignes de référence (diagonale)
+plt.plot([0, 1], [0, 1], color='gray', linestyle='--')  # Reference lines (diagonal)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
@@ -41,5 +41,5 @@ plt.title('ROC Curve for Logistic Regression')
 plt.legend(loc='lower right')
 plt.show()
 
-# Affichage du score AUC
+# Displaying the AUC score
 print(f"AUC Score: {roc_auc:.2f}")
