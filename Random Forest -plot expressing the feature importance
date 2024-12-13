@@ -1,0 +1,32 @@
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+
+# Prepare the data
+X = df_normalized  # Features (normalized data)
+y = (df_indexed['CO(GT)'] > df_indexed['CO(GT)'].median()).astype(int)  # Example: classification based on the median
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create and train the Random Forest model
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+random_forest.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = random_forest.predict(X_test)
+
+# Evaluate the model's performance
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Accuracy Score:", accuracy_score(y_test, y_pred))
+
+# Visualize the feature importance
+importances = random_forest.feature_importances_
+indices = np.argsort(importances)[::-1]
+
+plt.figure(figsize=(12, 8))
+plt.bar(range(X.shape[1]), importances[indices], align="center")
+plt.xticks(range(X.shape[1]), [X.columns[i] for i in indices], rotation=90)
+plt.title("Feature Importance - Random Forest")
+plt.xlabel("Features")
+plt.ylabel("Importance Score")
+plt.show()
