@@ -1,0 +1,54 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_classification, make_regression
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+
+# 1. KNN Classification Visualization
+# Generate synthetic data for classification
+X_class, y_class = make_classification(n_samples=300, n_features=2, n_classes=2, n_redundant=0, random_state=42)
+
+# Train a KNN Classifier
+knn_classifier = KNeighborsClassifier(n_neighbors=5)
+knn_classifier.fit(X_class, y_class)
+
+# Create a mesh grid for the decision boundary
+x_min, x_max = X_class[:, 0].min() - 1, X_class[:, 0].max() + 1
+y_min, y_max = X_class[:, 1].min() - 1, X_class[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1), np.arange(y_min, y_max, 0.1))
+
+# Predict the class for each point in the mesh grid
+Z = knn_classifier.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+
+# Plot the decision boundary
+plt.figure(figsize=(15, 6))
+plt.subplot(1, 2, 1)
+plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.Paired)
+plt.scatter(X_class[:, 0], X_class[:, 1], c=y_class, edgecolor='k', cmap=plt.cm.Paired)
+plt.title("KNN Classification")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+
+# 2. KNN Regression Visualization
+# Generate synthetic data for regression
+X_reg, y_reg = make_regression(n_samples=200, n_features=1, noise=15, random_state=42)
+
+# Train a KNN Regressor
+knn_regressor = KNeighborsRegressor(n_neighbors=5)
+knn_regressor.fit(X_reg, y_reg)
+
+# Predict regression values
+X_reg_test = np.linspace(X_reg.min() - 1, X_reg.max() + 1, 500).reshape(-1, 1)
+y_reg_pred = knn_regressor.predict(X_reg_test)
+
+# Plot the regression line
+plt.subplot(1, 2, 2)
+plt.scatter(X_reg, y_reg, color='blue', label='Data')
+plt.plot(X_reg_test, y_reg_pred, color='red', label='KNN Prediction')
+plt.title("KNN Regression")
+plt.xlabel("Feature")
+plt.ylabel("Target")
+plt.legend()
+
+plt.tight_layout()
+plt.show()
